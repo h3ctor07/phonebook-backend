@@ -60,12 +60,47 @@ app.get('/info', (request, response) => {
     `)
 })
 
+//delete person from phonebook
 app.delete('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id)
     persons = persons.filter(person => person.id !== id)
 
     response.status(204).end()
 
+})
+
+//generate random unique id
+const generateId = () =>{
+    randomId = Math.floor(Math.random() * 10000)
+
+    if (persons.find(person => person.id === randomId)){
+        return generateId()
+    } else {
+        return randomId
+    }
+}
+
+
+//add person to phonebook
+app.post('/api/persons', (request, response) => {
+    const body = request.body
+
+    if (!body.name || !body.number){
+        response.status(400).json({
+            error: "no content"
+        })
+    }
+
+    const newPerson = {
+        id: generateId(),
+        name: body.name,
+        number: body.number,
+        date: new Date()
+    }
+
+    persons = persons.concat(newPerson)
+
+    response.json(newPerson)
 })
 
 const PORT = 3001
