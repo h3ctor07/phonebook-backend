@@ -1,8 +1,18 @@
-const { request, response } = require('express')
+const { response } = require('express')
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
 
 app.use(express.json())
+
+morgan.token('posted', (request) => {
+    if (request.method === 'POST'){
+        return JSON.stringify(request.body)
+    }
+    return
+})
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :posted'))
 
 let persons = [
     { 
@@ -85,15 +95,21 @@ const generateId = () =>{
 app.post('/api/persons', (request, response) => {
     const body = request.body
 
-    if (!body.name){
+    if (!body.name) {
         return response.status(400).json({
-            error: "name can't be empty"
+            error: "empty name"
         })
     }
 
-    if (!body.number){
+    if (!body.number) {
+       return response.status(400).json({
+            error: "empty phone number"
+        })
+    }
+
+    if (persons.find(person => person.name === body.name)) {
         return response.status(400).json({
-            error: "number can't be empty"
+            error: "name must be unique"
         })
     }
     
